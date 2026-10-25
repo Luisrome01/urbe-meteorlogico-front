@@ -33,6 +33,8 @@ test("2024-01-01: mes ausente",()=>missing.status===404&&missing.body.error==="S
 test("2026-02-30: fecha inválida",()=>invalid.status===400&&invalid.body.error==="INVALID_DATE");
 test("2026-08-15: fuera de rango",()=>range.status===422&&range.body.error==="OUT_OF_ACADEMIC_RANGE");
 test("Trazabilidad de Excel oficial",()=>typeof june.body.source.filename==="string"&&typeof june.body.source.driveFileId==="string"&&typeof june.body.source.sha256==="string"&&typeof june.body.source.syncedAt==="string");
+test("histograma de viento conserva todos los registros válidos",()=>[june,march,april].every(({body,status})=>
+  status===200 && body.wind.histogram.reduce((sum,bin)=>sum+bin.count,0)===body.wind.validCount));
 test("24 horas para solar y temperatura",()=>june.body.solar.hourly.length===24&&june.body.temperature.hourly.length===24);
 let failures=0;for(const {name,assertion} of tests){let pass=false;try{pass=Boolean(assertion())}catch{}console.log((pass?"✓":"✗")+" "+name);if(!pass)failures++}
 if(failures){console.error(`${failures} de ${tests.length} verificaciones fallaron.`);process.exit(1)}
