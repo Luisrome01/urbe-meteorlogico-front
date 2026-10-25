@@ -1,0 +1,16 @@
+# Render Static Site: frontend React/Vite sin servidor Node.js adicional.
+services:
+  - type: web
+    name: urbe-meteorlogico-front
+    runtime: static
+    repo: https://github.com/Luisrome01/urbe-meteorlogico-front
+    branch: main
+    buildCommand: npm install --no-audit --no-fund && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://urbe-meteorlogico-api.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
