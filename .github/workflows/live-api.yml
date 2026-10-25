@@ -1,7 +1,7 @@
 name: API URBE — smoke test en vivo
 on:
-  push:
-    branches: [feat/observatorio-frontend-inicial]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 jobs:
   smoke:
@@ -11,5 +11,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - name: Validar API pública (puede despertar Render)
+      - name: Comprobar casos reales y estados de error
         run: npm run smoke:api

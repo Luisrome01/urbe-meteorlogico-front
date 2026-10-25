@@ -8,11 +8,11 @@ async function request(path) {
   return {status:response.status,body};
 }
 const approx=(actual,expected,tolerance=0.01)=>typeof actual==="number" && Math.abs(actual-expected)<tolerance;
-let health,available,june,april,missing,invalid,range;
+let health,available,june,march,april,missing,invalid,range;
 try {
-  [health,available,june,april,missing,invalid,range] = await Promise.all([
+  [health,available,june,march,april,missing,invalid,range] = await Promise.all([
     request("/api/health"),request("/api/availability"),
-    request("/api/weather/2026-06-15"),request("/api/weather/2025-04-01"),
+    request("/api/weather/2026-06-15"),request("/api/weather/2025-03-05"),request("/api/weather/2025-04-01"),
     request("/api/weather/2024-01-01"),request("/api/weather/2026-02-30"),
     request("/api/weather/2026-08-15")
   ]);
@@ -20,6 +20,14 @@ try {
 test("API lista con 35 meses",()=>health.status===200&&health.body.status==="ok"&&health.body.dataReady===true&&health.body.monthsIndexed===35);
 test("Disponibilidad real America/Caracas",()=>available.status===200&&available.body.timezone==="America/Caracas"&&Array.isArray(available.body.years));
 test("2026-06-15: viento real, radiación y temperatura",()=>june.status===200&&june.body.date==="2026-06-15"&&approx(june.body.wind.mean,3.2674277778)&&june.body.solar.max===845&&approx(june.body.temperature.mean,29.6668595679));
+test("2025-03-05: viento, irradiancia y temperaturas presentes y verificables",()=>
+  march.status===200 && march.body.date==="2025-03-05" &&
+  march.body.wind.unit==="m/s" && Number.isFinite(march.body.wind.mean) && Number.isFinite(march.body.wind.max) &&
+  march.body.solar.unit==="W/m²" && Number.isFinite(march.body.solar.max) &&
+  march.body.temperature.unit==="°C" && Number.isFinite(march.body.temperature.mean) &&
+  Number.isFinite(march.body.temperature.min) && Number.isFinite(march.body.temperature.max) &&
+  march.body.solar.hourly.length===24 && march.body.temperature.hourly.length===24 &&
+  march.body.wind.histogram.length>0);
 test("2025-04-01: cobertura parcial",()=>april.status===200&&april.body.date==="2025-04-01"&&approx(april.body.wind.coveragePct,55.9,0.2)&&april.body.quality.warnings.length>0);
 test("2024-01-01: mes ausente",()=>missing.status===404&&missing.body.error==="SOURCE_MONTH_UNAVAILABLE");
 test("2026-02-30: fecha inválida",()=>invalid.status===400&&invalid.body.error==="INVALID_DATE");
@@ -29,3 +37,9 @@ test("24 horas para solar y temperatura",()=>june.body.solar.hourly.length===24&
 let failures=0;for(const {name,assertion} of tests){let pass=false;try{pass=Boolean(assertion())}catch{}console.log((pass?"✓":"✗")+" "+name);if(!pass)failures++}
 if(failures){console.error(`${failures} de ${tests.length} verificaciones fallaron.`);process.exit(1)}
 console.log(`Todas las ${tests.length} verificaciones del backend real pasaron.`);
+
+if(march?.status===200){const {wind,solar,temperature}=march.body;
+console.log("2025-03-05 (API, para contraste documental con Excel):", JSON.stringify({
+  windMean:wind.mean,windMax:wind.max,solarMax:solar.max,
+  temperatureMean:temperature.mean,temperatureMin:temperature.min,temperatureMax:temperature.max
+}));}
