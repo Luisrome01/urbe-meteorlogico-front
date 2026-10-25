@@ -4,7 +4,7 @@ import {WeatherPanels} from "./components/DataPanel";
 import {QualityPanel,SourcePanel} from "./components/QualityPanel";
 import {Feedback} from "./components/Feedback";
 import {ApiRequestError, API_BASE_URL, weatherApi} from "./services/api";
-import {availableDate, isCompleteResponse, localDateLabel} from "./utils/weather";
+import {availableDate, isCompleteResponse, localDateLabel, hasSyncMetadata, isPartialDay, missingCoverageLabels} from "./utils/weather";
 import type {AvailabilityResponse, HealthResponse, WeatherResponse} from "./types/weather";
 
 type State = "loading"|"ready"|"error";
@@ -120,7 +120,8 @@ export default function App() {
         error={dateError} onRetry={()=>setDateRetry(n=>n+1)}/>}
       {bootState==="ready" && dateState==="ready" && report && <div className="results">
         <div className="resulttitle"><div><div className="eyebrow">RESULTADOS DE OBSERVACIÓN</div>
-          <h2>{localDateLabel(report.date)}</h2></div><span>Fuente oficial sincronizada</span></div>
+          <h2>{localDateLabel(report.date)}</h2></div><span>{hasSyncMetadata(report.source) ? "Metadatos de fuente disponibles" : "Procedencia sin verificar"}</span></div>
+        {isPartialDay(report) && <div className="partial-banner" role="status"><strong>Registros incompletos para la fecha seleccionada</strong><p>Los indicadores reflejan únicamente las mediciones disponibles. {missingCoverageLabels(report).join(" · ")}. Consulta las advertencias y el control de calidad.</p></div>}
         <WeatherPanels data={report}/>
         <QualityPanel data={report.quality}/>
         <SourcePanel data={report.source}/>

@@ -34,3 +34,41 @@ export function isCompleteResponse(report: WeatherResponse, date: string): boole
     && Array.isArray(report.wind?.histogram) && Array.isArray(report.solar?.hourly)
     && Array.isArray(report.temperature?.hourly) && Array.isArray(report.quality?.warnings);
 }
+
+/** Link a fichero real, construido únicamente desde el ID devuelto por la API. */
+export function driveFileUrl(id: string | undefined): string | null {
+  if (!id || !/^[A-Za-z0-9_-]{10,}$/.test(id)) return null;
+  return `https://drive.google.com/file/d/${encodeURIComponent(id)}/view`;
+}
+/** Si faltan metadatos no se puede afirmar que el archivo se sincronizó. */
+export function hasSyncMetadata(source: WeatherResponse["source"]): boolean {
+  return Boolean(
+    source.filename?.trim() &&
+    driveFileUrl(source.driveFileId) &&
+    source.sha256 && /^[a-fA-F0-9]{64}$/.test(source.sha256) &&
+    source.syncedAt && !Number.isNaN(new Date(source.syncedAt).getTime())
+  );
+}
+export function maracaiboTimestamp(timestamp: string | null | undefined): string {
+  if (!timestamp) return "No informada";
+  const time = new Date(timestamp);
+  if (Number.isNaN(time.getTime())) return "Fecha no válida";
+  return new Intl.DateTimeFormat("es-VE", {
+    day: "2-digit", month: "short", year: "numeric", hour: "2-digit",
+    minute: "2-digit", hourCycle: "h23", timeZone: "America/Caracas",
+  }).format(time) + " (Maracaibo, UTC−4)";
+}
+export function isPartialDay(report: WeatherResponse): boolean {
+  const quality = report.quality;
+  const lessThanExpected = quality.expectedCount !== null && quality.observedCount < quality.expectedCount;
+  const coverages = [report.wind.coveragePct, report.solar.coveragePct, report.temperature.coveragePct];
+  return lessThanExpected || coverages.some(value => value !== null && value < 100);
+}
+export function missingCoverageLabels(report: WeatherResponse): string[] {
+  return [
+    ["viento", report.wind.coveragePct],
+    ["radiación", report.solar.coveragePct],
+    ["temperatura", report.temperature.coveragePct],
+  ].filter(([, value]) => value === null || (typeof value === "number" && value < 100))
+    .map(([name, value]) => `${name}: ${numberLabel(value as number | null, " %")}`);
+}

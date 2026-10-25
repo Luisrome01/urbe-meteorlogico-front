@@ -1,42 +1,60 @@
 import type {WeatherResponse} from "../types/weather";
-import {numberLabel} from "../utils/weather";
+import {numberLabel, driveFileUrl, hasSyncMetadata, maracaiboTimestamp} from "../utils/weather";
+
 export function QualityPanel({data}: {data: WeatherResponse["quality"]}) {
-  const items = [
+  const summary = [
     ["Registros observados",numberLabel(data.observedCount)],
-    ["Intervalo nominal",numberLabel(data.intervalMinutes," min")],
     ["Registros esperados",numberLabel(data.expectedCount)],
-    ["Duplicados",numberLabel(data.duplicateCount)],
-    ["Viento inválido",numberLabel(data.invalidWind)],
-    ["Radiación inválida",numberLabel(data.invalidSolar)],
-    ["Temperatura inválida",numberLabel(data.invalidTemperature)],
+    ["Intervalo nominal",numberLabel(data.intervalMinutes," min")],
     ["Intervalos irregulares",numberLabel(data.irregularGapCount)],
+  ] as const;
+  const details = [
+    ["Registros duplicados",numberLabel(data.duplicateCount)],
+    ["Mediciones inválidas de viento",numberLabel(data.invalidWind)],
+    ["Mediciones inválidas de radiación",numberLabel(data.invalidSolar)],
+    ["Mediciones inválidas de temperatura",numberLabel(data.invalidTemperature)],
     ["Fuera de malla temporal",numberLabel(data.offGridCount)],
     ["Slots duplicados",numberLabel(data.duplicateSlotCount)],
     ["Unidades desconocidas",data.unknownUnits ? "Sí" : "No"],
   ] as const;
-  return <section className="card analysis">
+  return <section className="card analysis quality-panel">
     <div className="eyebrow">CONTROL DE CALIDAD</div>
     <h3>Integridad de los registros</h3>
-    <p>Indicadores producidos por el backend a partir de los archivos originales, sin recálculos del navegador.</p>
-    <div className="origin">{items.map(([label,value]) =>
+    <p>Resultados de calidad proporcionados por el backend, sin modificar sus cálculos.</p>
+    <div className="origin quality-primary">{summary.map(([label,value]) =>
       <div key={label}><span>{label}</span><b>{value}</b></div>)}</div>
     <div className={data.warnings.length ? "notice quality-alert" : "quality-ok"} role="status">
       <strong>{data.warnings.length ? "Advertencias de calidad" : "Sin advertencias adicionales"}</strong>
       {data.warnings.length > 0 && <ul>{data.warnings.map((message,i)=><li key={i}>{message}</li>)}</ul>}
     </div>
+    <details className="quality-details">
+      <summary>Ver indicadores técnicos adicionales</summary>
+      <div className="origin">{details.map(([label,value]) =>
+        <div key={label}><span>{label}</span><b>{value}</b></div>)}</div>
+    </details>
   </section>;
 }
 export function SourcePanel({data}: {data: WeatherResponse["source"]}) {
-  return <section className="card analysis">
+  const viewUrl = driveFileUrl(data.driveFileId);
+  const complete = hasSyncMetadata(data);
+  return <section className="card analysis source-panel">
     <div className="eyebrow">TRAZABILIDAD DE DATOS</div>
     <h3>Procedencia del archivo Excel</h3>
-    <p>Identificación del archivo oficial utilizado para calcular estos resultados.</p>
+    <p>El backend procesa archivos Excel originales sincronizados desde el repositorio meteorológico URBE en Google Drive. La aplicación no procesa ni altera los originales.</p>
     <div className="origin">
-      <div><span>Archivo</span><b>{data.filename || "No informado"}</b></div>
-      <div><span>Google Drive ID</span><b>{data.driveFileId || "No informado"}</b></div>
-      <div><span>SHA-256</span><b className="hash">{data.sha256 || "No informado"}</b></div>
-      <div><span>Última sincronización</span><b>{data.syncedAt || "No informada"}</b></div>
-      <div><span>Origen</span><b>Estación Meteorológica URBE · Excel oficial</b></div>
+      <div><span>Archivo consultado</span><b>{data.filename || "No informado"}</b></div>
+      <div><span>Google Drive ID</span><b className="hash">{data.driveFileId || "No informado"}</b></div>
+      <div><span>SHA-256 del archivo</span><b className="hash">{data.sha256 || "No informado"}</b></div>
+      <div><span>Última sincronización</span><b>{maracaiboTimestamp(data.syncedAt)}</b></div>
     </div>
+    <div className="source-footer">
+      <div className={complete ? "source-verification valid" : "source-verification"}>
+        {complete ? "Metadatos de sincronización disponibles" : "Sincronización no verificable: faltan metadatos completos"}
+      </div>
+      {viewUrl ? <a className="source-link" href={viewUrl} target="_blank" rel="noopener noreferrer">
+        Abrir Excel original en Google Drive <span aria-hidden="true">↗</span>
+      </a> : <span className="source-unavailable">Enlace al Excel no disponible: falta el ID de Drive.</span>}
+    </div>
+    <p className="note">La apertura del archivo depende de los permisos de acceso establecidos en Google Drive.</p>
   </section>;
 }

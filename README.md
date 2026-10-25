@@ -61,3 +61,8 @@ El archivo `render.yaml` documenta y automatiza la configuración del Static Sit
 ## Estructura
 
 `src/components` tarjetas y filtros · `src/charts` gráficas · `src/services` API · `src/types` contrato · `src/utils` transformaciones puramente visuales · `src/styles` CSS · `docs` metodología de integración.
+
+## Revisión final académica
+La revisión conserva el diseño institucional y el logo entregado. `src/components/QualityPanel.tsx` deja visibles siempre las advertencias y permite desplegar indicadores técnicos secundarios. La procedencia muestra la hora de sincronización en America/Caracas y abre el Excel directamente por el ID de Google Drive, si está disponible; no se declara sincronizada una fuente cuyos metadatos son insuficientes.
+
+Ejecutar `npm test`, `npm run build`, `npm run smoke:api` y `npm run test:e2e` (con Chromium de Playwright instalado) antes de presentar el proyecto. Evidencias y dos correcciones documentadas en `docs/revision-final-academica.md`.

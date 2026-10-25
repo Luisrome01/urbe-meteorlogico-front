@@ -12,3 +12,27 @@
 /* Logotipo oficial URBE suministrado para este proyecto. */
 .logo-img{display:block;flex:0 0 auto;width:92px;height:auto;object-fit:contain}
 @media(max-width:700px){.logo-img{width:68px}}
+
+/* Ajustes finales: conservar identidad minimalista y jerarquía científica */
+.logo-img{align-self:center;display:block;max-width:100%;object-fit:contain}
+.identity>div:last-child{min-width:0}
+.analysis{overflow:hidden}
+.plot{min-height:320px}
+.stat strong{overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.quality-primary{grid-template-columns:repeat(4,minmax(0,1fr))}
+.quality-details{border-top:1px solid #e6ecf1;margin-top:22px;padding-top:14px}
+.quality-details summary{cursor:pointer;color:#166d8d;font-size:13px;font-weight:700;padding:7px 0;list-style-position:inside}
+.quality-details summary:focus-visible,.source-link:focus-visible{outline:3px solid #72bcd0;outline-offset:3px}
+.quality-details .origin{margin-top:18px}
+.source-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-top:24px;padding-top:20px;border-top:1px solid #e5edf2}
+.source-verification{font-size:12px;font-weight:600;color:#8a6031}
+.source-verification.valid{color:#36765b}
+.source-link{display:inline-flex;align-items:center;gap:8px;background:#f2f8fa;border:1px solid #b8d8e1;border-radius:6px;padding:12px 14px;text-decoration:none;color:#146483;font-size:13px;font-weight:700}
+.source-link:hover{background:#e7f3f7}
+.source-unavailable{font-size:12px;color:#8b623d}
+.partial-banner{border:1px solid #ecd9ad;border-left:4px solid #ca963a;border-radius:6px;background:#fffaf0;color:#765b33;padding:16px 18px;margin:0 0 25px}
+.partial-banner strong{font-size:14px}
+.partial-banner p{margin:7px 0 0;font-size:12px;line-height:1.6}
+@media(max-width:900px){.quality-primary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.logo-img{width:72px}.top{gap:12px}.identity{align-items:center}.author{margin-left:84px}.plot{height:300px;min-height:300px}.stats{gap:10px}.stat{padding:4px 8px}.quality-primary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:380px){.container{padding-left:16px;padding-right:16px}.identity strong{font-size:11px}.logo-img{width:64px}.author{margin-left:76px}.analysis{padding:20px 14px}.stat strong{font-size:20px}.plot{height:300px}}
