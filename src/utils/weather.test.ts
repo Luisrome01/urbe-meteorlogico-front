@@ -67,7 +67,7 @@ describe("trazabilidad y calidad final", () => {
     expect(missingCoverageLabels(r)).toEqual(["viento: 55,9 %", "radiación: 80 %"]);
     const complete={wind:{coveragePct:100},solar:{coveragePct:100},temperature:{coveragePct:100},quality:{observedCount:288,expectedCount:288}} as WeatherResponse;
     expect(isPartialDay(complete)).toBe(false);
-    expect(isPartialDay({...complete, wind: {coveragePct: 95}})).toBe(true);
-    expect(missingCoverageLabels({...complete, wind: {coveragePct: 95}})).toEqual(["viento: 95 %"]);
+    expect(isPartialDay({...complete, wind: {...complete.wind, coveragePct: 95}})).toBe(true);
+    expect(missingCoverageLabels({...complete, wind: {...complete.wind, coveragePct: 95}})).toEqual(["viento: 95 %"]);
   });
 });
