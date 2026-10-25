@@ -1,0 +1,23 @@
+name: Frontend URBE — CI
+on:
+  push:
+    branches: [main, feat/observatorio-frontend-inicial]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Instalar dependencias
+        run: npm install --no-audit --no-fund
+      - name: Pruebas unitarias
+        run: npm test
+      - name: TypeScript y build de Vite
+        run: npm run build

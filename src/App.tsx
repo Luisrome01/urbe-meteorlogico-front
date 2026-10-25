@@ -1,10 +1,134 @@
-import{useEffect,useState}from"react";import DateSelector from"./components/DateSelector";import{WindChart,SolarChart,TempChart}from"./charts/Charts";import{availability,weather,health,configured}from"./services/api";import type{Availability,Weather}from"./types/weather";
-const display=(n:number|null|undefined,u="")=>n==null?"—":n.toLocaleString("es-VE",{maximumFractionDigits:2})+u;
-function Stats({items}:{items:{label:string;value:string}[]}){return <div className="stats">{items.map(x=><div className="stat" key={x.label}><span>{x.label}</span><strong>{x.value}</strong></div>)}</div>}
-export default function App(){const[a,setA]=useState<Availability|null>(null),[y,setY]=useState(""),[m,setM]=useState(""),[d,setD]=useState(""),[report,setReport]=useState<Weather|null>(null),[error,setError]=useState(""),[loading,setLoading]=useState(false),[connected,setConnected]=useState(false);
-const selected=y&&m&&d?`${y}-${m.padStart(2,"0")}-${d.padStart(2,"0")}`:"";
-useEffect(()=>{const c=new AbortController();if(!configured){setError("Falta configurar VITE_API_URL. No se mostrarán datos inventados.");return;}health(c.signal).then(r=>setConnected(r.status==="ok"||r.status==="healthy")).catch(()=>{});availability(c.signal).then(setA).catch(e=>{if(!c.signal.aborted)setError(String(e.message))});return()=>c.abort()},[]);
-useEffect(()=>{setReport(null);if(!selected)return;const c=new AbortController();setLoading(true);setError("");weather(selected,c.signal).then(r=>{if(r.date!==selected)throw Error("La API devolvió una fecha distinta a la solicitada.");if(!c.signal.aborted)setReport(r)}).catch(e=>{if(!c.signal.aborted)setError(String(e.message))}).finally(()=>{if(!c.signal.aborted)setLoading(false)});return()=>c.abort()},[selected]);
-const incomplete=a?.years.find(v=>String(v.year)===y)?.months.find(v=>String(v.month)===m)?.incomplete;
-return <><header><div className="container top"><div className="identity"><div className="logo" aria-label="Logo institucional pendiente">URBE<small>Logo pendiente</small></div><div><strong>Universidad Privada Dr. Rafael Belloso Chacín. Decanato de Extensión. Diplomado en Inteligencia Artificial</strong><p>Estación Meteorológica URBE, Maracaibo</p></div></div><div className="author">PROYECTO ACADÉMICO<strong>Luis Romero</strong></div></div></header><main className="container"><section className="intro"><div className="eyebrow">ANÁLISIS CIENTÍFICO · MARACAIBO, VENEZUELA</div><h1>Observatorio Meteorológico <em>URBE</em></h1><p>Análisis histórico de viento, radiación solar y temperatura exterior a partir de registros instrumentales de la estación.</p></section><section className="card selection"><div className="sectionhead"><div><h2>Período de observación</h2><p>Selecciona una fecha con registros disponibles.</p></div><small>America/Caracas · UTC−4</small></div><DateSelector data={a} y={y} m={m} d={d} setY={setY} setM={setM} setD={setD}/>{incomplete&&<p className="notice">Este mes tiene registros incompletos; solamente se habilitan los días disponibles.</p>}<div className="status"><span className={connected?"dot online":"dot"}/> {connected?"API conectada":"API sin conexión confirmada"} <span>·</span> Fecha consultada: <b>{selected||"Sin seleccionar"}</b></div></section>{error&&<section className="message" role="alert"><h2>No se pudieron cargar los datos</h2><p>{error}</p></section>}{loading&&<section className="message" role="status">Consultando registros de {selected}...</section>}{!selected&&!error&&<section className="message"><h2>Selecciona un período para comenzar</h2><p>Las gráficas aparecerán cuando se consulte una fecha real en el backend. No se usan datos simulados.</p></section>}
-{report&&<div className="results"><div className="resulttitle"><div><div className="eyebrow">RESULTADOS DE OBSERVACIÓN</div><h2>{report.date}</h2></div><span>Datos obtenidos de la API</span></div><section className="card analysis"><div className="eyebrow">01 / VIENTO</div><h3>Distribución de velocidad</h3><p>Histograma de frecuencias absolutas por intervalo, en m/s.</p><Stats items={[{label:"Velocidad media",value:display(report.wind.mean," m/s")},{label:"Velocidad máxima",value:display(report.wind.max," m/s")},{label:"Registros válidos",value:display(report.wind.validCount)}]}/><WindChart data={report.wind}/></section><section className="card analysis"><div className="eyebrow">02 / RADIACIÓN SOLAR</div><h3>Perfil horario de irradiancia</h3><p>Promedio de registros válidos por hora, expresado en W/m²; no es energía acumulada.</p><Stats items={[{label:"Máximo diario",value:display(report.solar.max," W/m²")},{label:"Cobertura",value:display(report.solar.coveragePct,"%")},{label:"Horas con medición",value:String(report.solar.hourly.filter(x=>x.mean!==null).length)+"/24"}]}/><SolarChart data={report.solar}/><p className="note">Los datos ausentes se muestran como huecos, no como cero.</p></section><section className="card analysis"><div className="eyebrow">03 / TEMPERATURA EXTERIOR</div><h3>Perfil de temperatura media por hora</h3><p>Las mediciones ausentes o insuficientes no se interpolan.</p><Stats items={[{label:"Media diaria",value:display(report.temperature.mean," °C")},{label:"Mínima",value:display(report.temperature.min," °C")},{label:"Máxima",value:display(report.temperature.max," °C")},{label:"Cobertura",value:display(report.temperature.coveragePct,"%")}]}/><TempChart data={report.temperature}/><p className="note">Horas ausentes o insuficientes: {report.temperature.hourly.filter(x=>x.mean===null||x.sufficient===false).map(x=>String(x.hour).padStart(2,"0")+":00").join(", ")||"Ninguna informada"}.</p></section><section className="card analysis"><h3>Calidad y procedencia</h3><div className="origin"><div><span>Archivo Excel</span><b>{report.source.filename||"No informado"}</b></div><div><span>Origen</span><b>{report.source.origin||"Repositorio URBE"}</b></div><div><span>Última sincronización</span><b>{report.source.syncedAt||"No informada"}</b></div><div><span>Drive File ID</span><b>{report.source.driveFileId||"No disponible"}</b></div><div><span>Registros inválidos</span><b>{report.quality.invalidCount??"No informados"}</b></div><div><span>Registros faltantes</span><b>{report.quality.missingCount??"No informados"}</b></div></div>{report.quality.warnings?.length>0&&<div className="notice"><b>Advertencias de calidad</b><ul>{report.quality.warnings.map((w,i)=><li key={i}>{w}</li>)}</ul></div>}</section></div>}</main><footer><div className="container foot"><span>Universidad Privada Dr. Rafael Belloso Chacín · Diplomado en Inteligencia Artificial</span><span>Observatorio Meteorológico URBE · Luis Romero</span></div></footer></>}
+import {useEffect, useState} from "react";
+import DateSelector from "./components/DateSelector";
+import {WeatherPanels} from "./components/DataPanel";
+import {QualityPanel,SourcePanel} from "./components/QualityPanel";
+import {Feedback} from "./components/Feedback";
+import {ApiRequestError, API_BASE_URL, weatherApi} from "./services/api";
+import {availableDate, isCompleteResponse, localDateLabel} from "./utils/weather";
+import type {AvailabilityResponse, HealthResponse, WeatherResponse} from "./types/weather";
+
+type State = "loading"|"ready"|"error";
+export default function App() {
+  const [health, setHealth] = useState<HealthResponse | null>(null);
+  const [availability, setAvailability] = useState<AvailabilityResponse | null>(null);
+  const [bootState, setBootState] = useState<State>("loading");
+  const [bootError, setBootError] = useState<ApiRequestError | null>(null);
+  const [bootRetry, setBootRetry] = useState(0);
+  const [year, setYear] = useState("");
+  const [month, setMonth] = useState("");
+  const [day, setDay] = useState("");
+  const [report, setReport] = useState<WeatherResponse | null>(null);
+  const [dateState, setDateState] = useState<"idle"|State>("idle");
+  const [dateError, setDateError] = useState<ApiRequestError | null>(null);
+  const [dateRetry, setDateRetry] = useState(0);
+  const selected = year && month && day ?
+    `${year}-${month.padStart(2,"0")}-${day.padStart(2,"0")}` : "";
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setBootState("loading"); setBootError(null); setAvailability(null); setHealth(null);
+    const run = async () => {
+      if (!API_BASE_URL) throw new ApiRequestError("Falta configurar VITE_API_BASE_URL.", 0);
+      const status = await weatherApi.health(controller.signal);
+      if (status.status !== "ok" || !status.dataReady) {
+        throw new ApiRequestError("La API responde, pero sus datos meteorológicos todavía no están listos.", 503, "DATA_NOT_READY");
+      }
+      if (controller.signal.aborted) return;
+      setHealth(status);
+      const dates = await weatherApi.availability(controller.signal);
+      if (dates.timezone !== "America/Caracas" || !Array.isArray(dates.years)) {
+        throw new ApiRequestError("El servidor entregó una disponibilidad inválida.", 502);
+      }
+      if (!controller.signal.aborted) {setAvailability(dates);setBootState("ready");}
+    };
+    run().catch(error => {
+      if (!controller.signal.aborted) {
+        setBootError(error instanceof ApiRequestError ? error : new ApiRequestError("Error al consultar el servicio meteorológico.", 0));
+        setBootState("error");
+      }
+    });
+    return () => controller.abort();
+  }, [bootRetry]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setReport(null); setDateError(null);
+    if (bootState !== "ready" || !selected || !availability) {
+      setDateState("idle"); return () => controller.abort();
+    }
+    if (!availableDate(availability, selected)) {
+      setDateError(new ApiRequestError("La fecha no está disponible en el inventario oficial.", 404));
+      setDateState("error"); return () => controller.abort();
+    }
+    setDateState("loading");
+    weatherApi.weather(selected, controller.signal).then(data => {
+      if (!isCompleteResponse(data, selected)) {
+        throw new ApiRequestError("La API devolvió una fecha diferente o un informe incompleto.", 502);
+      }
+      if (!controller.signal.aborted) {setReport(data);setDateState("ready");}
+    }).catch(error => {
+      if (!controller.signal.aborted) {
+        setDateError(error instanceof ApiRequestError ? error : new ApiRequestError("Error inesperado al consultar los datos.", 0));
+        setDateState("error");
+      }
+    });
+    return () => controller.abort();
+  }, [selected, availability, bootState, dateRetry]);
+
+  const selectedMonth = availability?.years.find(y=>String(y.year)===year)
+    ?.months.find(m=>String(m.month)===month);
+  return <div className="app">
+    <header><div className="container top">
+      <div className="identity">
+        <div className="logo" aria-label="Pendiente logo oficial de URBE">URBE<small>Logo pendiente</small></div>
+        <div><strong>Universidad Privada Dr. Rafael Belloso Chacín. Decanato de Extensión. Diplomado en Inteligencia Artificial</strong>
+          <p>Estación Meteorológica URBE, Maracaibo</p></div>
+      </div>
+      <div className="author">PROYECTO ACADÉMICO<strong>Luis Romero</strong></div>
+    </div></header>
+    <main className="container">
+      <section className="intro">
+        <div className="eyebrow">ANÁLISIS CIENTÍFICO · MARACAIBO, VENEZUELA</div>
+        <h1>Observatorio Meteorológico <em>URBE</em></h1>
+        <p>Consulta de viento, radiación solar y temperatura exterior a partir de los registros instrumentales de la estación, sin sustituir fechas ni generar valores ficticios.</p>
+      </section>
+      <section className="card selection" aria-label="Selección del período">
+        <div className="sectionhead"><div><h2>Período de observación</h2>
+          <p>Selecciona únicamente fechas verificadas por el repositorio.</p></div>
+          <small>America/Caracas · UTC−4</small></div>
+        <DateSelector data={availability} year={year} month={month} day={day}
+          onYear={v=>{setYear(v);setMonth("");setDay("");}}
+          onMonth={v=>{setMonth(v);setDay("");}} onDay={setDay}/>
+        {selectedMonth && <p className="month-note">Días consultables en este mes: <strong>{selectedMonth.days.length}</strong>.
+          La disponibilidad procede del inventario real; pueden existir períodos incompletos.</p>}
+        <div className="status" aria-live="polite">
+          <span className={bootState==="ready"?"dot online":"dot"}/>
+          <span>{bootState==="loading"?"Comprobando servicio":bootState==="ready"?"API conectada y datos listos":"Sin conexión confirmada"}</span>
+          {health && <span>· {health.monthsIndexed} meses indexados</span>}
+          <span>·</span> Fecha consultada: <b>{selected || "Sin seleccionar"}</b>
+        </div>
+      </section>
+      {bootState==="loading" && <Feedback title="Conectando con la estación"
+        description="Verificando la API y el inventario de fechas. El servicio de Render puede tardar en activarse después de un período de inactividad."/>}
+      {bootState==="error" && <Feedback title="No fue posible cargar la disponibilidad"
+        error={bootError} onRetry={()=>setBootRetry(n=>n+1)}/>}
+      {bootState==="ready" && dateState==="idle" && <Feedback title="Selecciona una fecha para comenzar"
+        description="Los gráficos se generan exclusivamente con observaciones reales devueltas por el backend. Enero de 2024 no tiene archivo fuente."/>}
+      {bootState==="ready" && dateState==="loading" && <Feedback title="Consultando registros"
+        description={`Recuperando las mediciones de ${localDateLabel(selected)}…`}/>}
+      {bootState==="ready" && dateState==="error" && <Feedback title="No fue posible mostrar las mediciones"
+        error={dateError} onRetry={()=>setDateRetry(n=>n+1)}/>}
+      {bootState==="ready" && dateState==="ready" && report && <div className="results">
+        <div className="resulttitle"><div><div className="eyebrow">RESULTADOS DE OBSERVACIÓN</div>
+          <h2>{localDateLabel(report.date)}</h2></div><span>Fuente oficial sincronizada</span></div>
+        <WeatherPanels data={report}/>
+        <QualityPanel data={report.quality}/>
+        <SourcePanel data={report.source}/>
+      </div>}
+    </main>
+    <footer><div className="container foot">
+      <span>Universidad Privada Dr. Rafael Belloso Chacín · Diplomado en Inteligencia Artificial</span>
+      <span>Observatorio Meteorológico URBE · Luis Romero</span>
+    </div></footer>
+  </div>;
+}

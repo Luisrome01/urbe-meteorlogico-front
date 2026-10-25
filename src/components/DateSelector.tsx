@@ -1,3 +1,31 @@
-import type{Availability}from"../types/weather";const months=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
-export default function DateSelector({data,y,m,d,setY,setM,setD}:{data:Availability|null;y:string;m:string;d:string;setY:(v:string)=>void;setM:(v:string)=>void;setD:(v:string)=>void}){const years=data?.years||[],year=years.find(v=>String(v.year)===y),month=year?.months.find(v=>String(v.month)===m);
-return <div className="selectors"><label>Año<select aria-label="Año" value={y} disabled={!years.length} onChange={e=>{setY(e.target.value);setM("");setD("")}}><option value="">Seleccionar año</option>{years.map(v=><option key={v.year} value={v.year}>{v.year}</option>)}</select></label><label>Mes<select aria-label="Mes" value={m} disabled={!year} onChange={e=>{setM(e.target.value);setD("")}}><option value="">Seleccionar mes</option>{year?.months.map(v=><option key={v.month} value={v.month}>{months[v.month-1]}{v.incomplete?" (incompleto)":""}</option>)}</select></label><label>Día<select aria-label="Día" value={d} disabled={!month} onChange={e=>setD(e.target.value)}><option value="">Seleccionar día</option>{month?.days.map(v=><option key={v} value={v}>{String(v).padStart(2,"0")}</option>)}</select></label></div>}
+import type {AvailabilityResponse} from "../types/weather";
+const months = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+export default function DateSelector({data, year, month, day, onYear, onMonth, onDay}: {
+  data: AvailabilityResponse | null;
+  year: string; month: string; day: string;
+  onYear: (value: string) => void; onMonth: (value: string) => void; onDay: (value: string) => void;
+}) {
+  const years = data?.years ?? [];
+  const selectedYear = years.find(y => String(y.year) === year);
+  const selectedMonth = selectedYear?.months.find(m => String(m.month) === month);
+  return <div className="selectors">
+    <label htmlFor="year">Año
+      <select id="year" value={year} disabled={!years.length} onChange={e => onYear(e.target.value)}>
+        <option value="">Seleccionar año</option>
+        {years.map(y => <option key={y.year} value={y.year}>{y.year}</option>)}
+      </select>
+    </label>
+    <label htmlFor="month">Mes
+      <select id="month" value={month} disabled={!selectedYear} onChange={e => onMonth(e.target.value)}>
+        <option value="">Seleccionar mes</option>
+        {selectedYear?.months.map(m => <option key={m.month} value={m.month}>{months[m.month - 1]}</option>)}
+      </select>
+    </label>
+    <label htmlFor="day">Día
+      <select id="day" value={day} disabled={!selectedMonth} onChange={e => onDay(e.target.value)}>
+        <option value="">Seleccionar día</option>
+        {selectedMonth?.days.map(d => <option key={d} value={d}>{String(d).padStart(2,"0")}</option>)}
+      </select>
+    </label>
+  </div>;
+}
