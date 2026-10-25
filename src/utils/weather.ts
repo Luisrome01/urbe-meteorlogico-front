@@ -62,13 +62,13 @@ export function isPartialDay(report: WeatherResponse): boolean {
   const quality = report.quality;
   const lessThanExpected = quality.expectedCount !== null && quality.observedCount < quality.expectedCount;
   const coverages = [report.wind.coveragePct, report.solar.coveragePct, report.temperature.coveragePct];
-  return lessThanExpected || coverages.some(value => value !== null && value < 75);
+  return lessThanExpected || coverages.some(value => value !== null && value < 100);
 }
 export function missingCoverageLabels(report: WeatherResponse): string[] {
   return [
     ["viento", report.wind.coveragePct],
     ["radiación", report.solar.coveragePct],
     ["temperatura", report.temperature.coveragePct],
-  ].filter(([, value]) => value === null || (typeof value === "number" && value < 75))
+  ].filter(([, value]) => value === null || (typeof value === "number" && value < 100))
     .map(([name, value]) => `${name}: ${numberLabel(value as number | null, " %")}`);
 }
