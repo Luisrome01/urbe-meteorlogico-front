@@ -1,5 +1,7 @@
 name: API URBE — smoke test en vivo
 on:
+  push:
+    branches: [feat/observatorio-frontend-inicial]
   workflow_dispatch:
 jobs:
   smoke:
