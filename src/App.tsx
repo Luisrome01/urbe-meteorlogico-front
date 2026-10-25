@@ -80,7 +80,7 @@ export default function App() {
   return <div className="app">
     <header><div className="container top">
       <div className="identity">
-        <div className="logo" aria-label="Pendiente logo oficial de URBE">URBE<small>Logo pendiente</small></div>
+        <img className="logo-img" src="/assets/urbe-logo.png" alt="Logo oficial de la Universidad Privada Dr. Rafael Belloso Chacín (URBE)" width={92} height={82} />
         <div><strong>Universidad Privada Dr. Rafael Belloso Chacín. Decanato de Extensión. Diplomado en Inteligencia Artificial</strong>
           <p>Estación Meteorológica URBE, Maracaibo</p></div>
       </div>

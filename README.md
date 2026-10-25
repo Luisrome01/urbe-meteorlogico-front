@@ -56,7 +56,7 @@ El archivo `render.yaml` documenta y automatiza la configuración del Static Sit
 - Los valores nulos no se convierten a cero ni se interpolan.
 - Todos los resultados, cobertura y advertencias vienen del backend; se muestra archivo Excel, ID Drive, hash SHA-256 y sincronización.
 - Documentación detallada: [docs/api-contract.md](docs/api-contract.md).
-- El logo institucional es **pendiente de colocar el archivo oficial proporcionado por el profesor** en `public/assets/`; la cabecera solo muestra un marcador identificado, sin logo inventado.
+- El logotipo URBE fue proporcionado por el usuario y está incluido como recurso optimizado en `public/assets/urbe-logo.png`. Aparece en el encabezado institucional, con texto alternativo y ajuste responsivo.
 
 ## Estructura
 
