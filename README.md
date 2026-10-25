@@ -34,13 +34,20 @@ npm run smoke:api
 
 `npm test`: pruebas unitarias sin internet. `npm run smoke:api`: comprobación **en vivo** de la API Render con registros y errores reales; puede fallar si la API está temporalmente inaccesible. CI automática en GitHub para compilación y unitarias; workflow manual para humo externo.
 
-## Vercel
+## Despliegue en Render (frontend estático)
 
-- Importar el repositorio y seleccionar Framework **Vite**.
-- Comando build: `npm run build`. Carpeta de salida: `dist`.
-- Producción utiliza `.env.production` con la URL pública real y acepta override con `VITE_API_BASE_URL` en las variables de entorno de Vercel.
-- Tras desplegar, copiar el **origen exacto** asignado por Vercel (p. ej. `https://observatorio-urbe.vercel.app`) a `FRONTEND_ORIGIN` en Render. Debe ser sin barra final.
-- El backend actualmente autoriza `http://localhost:5173`. Hasta actualizar CORS, el dominio nuevo de Vercel no podrá consumirlo desde el navegador.
+**Proveedor único de despliegue: Render**. El frontend es un **Static Site**; el backend sigue siendo el servicio Node.js independiente.
+
+- Repositorio: `https://github.com/Luisrome01/urbe-meteorlogico-front`
+- Rama: `main` (o la rama de desarrollo hasta fusionarla)
+- Build Command: `npm install --no-audit --no-fund && npm run build`
+- Publish Directory: `dist`
+- Environment Variable: `VITE_API_BASE_URL=https://urbe-meteorlogico-api.onrender.com`
+- Auto-Deploy: activado.
+
+El archivo `render.yaml` documenta y automatiza la configuración del Static Site (incluido el rewrite para SPA). En Render también puede crearse directamente desde el panel o la integración de ChatGPT. No necesitamos un segundo Node.js Web Service ni Next.js.
+
+**CORS obligatorio**: después de crear el Static Site, añadir su origen real `https://<nombre>.onrender.com` (sin barra final) a `FRONTEND_ORIGIN` del backend Render, junto a `http://localhost:5173`; no sustituir el origen local si seguimos probando en desarrollo. Las variables de Vite se incluyen en el bundle compilado: nunca guardar secretos en `VITE_*`.
 
 ## Reglas científicas
 
