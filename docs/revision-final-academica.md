@@ -31,7 +31,7 @@ Estos valores publicados en `backend/docs/validated-cases.md` provienen de compa
 | 2026-06-15 | Temperatura máxima | 33.9444444444 | °C |
 | 2025-04-01 | Cobertura viento | ≈55.9 | % |
 
-Para **2025-03-05**, se ejecuta contraste estructural y se imprime el conjunto de seis valores obtenidos por la API. El estudiante ha indicado que ya verificó este día frente al Excel original, pero no se incluyen cifras documentales que no hayan sido recuperadas explícitamente.
+Para **2025-03-05**, la API real devolvió viento medio **4.9143 m/s**, viento máximo **7.5997 m/s**, radiación máxima **711 W/m²**, temperatura media **27.6497 °C**, mínima **25.7222 °C** y máxima **30.3333 °C**. El estudiante indicó haber contrastado este día con el Excel original; estos números se extrajeron de las respuestas API registradas en GitHub Actions. La prueba adicional comprueba que la suma de frecuencias del histograma equivale a todos los registros válidos.
 
 ## Requisitos de entrega aún independientes del frontend
-La guía requiere **informe PDF máximo 4 páginas** con IA utilizada, arquitectura, fuente, dos correcciones, pruebas y validación; también **capturas de tres gráficas y evidencia de la fuente**, más tabla de tres valores contrastados. Este archivo documenta el contenido base y los workflows producen capturas; generar/adjuntar el PDF y capturas a la entrega final continúa como tarea editorial.
+La guía requiere **informe PDF máximo 4 páginas** con IA utilizada, arquitectura, fuente, dos correcciones, pruebas y validación; también **capturas de tres gráficas y evidencia de la fuente**, más tabla de tres valores contrastados. Se preparó un informe PDF de **cuatro páginas**, capturas detalladas de las tres gráficas, capturas completas de escritorio/móvil y un ZIP con evidencias como archivos de entrega independientes del repositorio. Conviene entregar el PDF y el ZIP junto al código reproducible.
